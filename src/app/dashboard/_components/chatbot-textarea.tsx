@@ -1,20 +1,31 @@
-import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/field";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { SendIcon } from "lucide-react";
-import { KeyboardEvent } from "react";
-import { Controller, useForm } from "react-hook-form";
-import z from "zod";
+
+import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
+import { Toggle } from '@/components/ui/toggle';
+import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { BrainIcon, SendIcon } from 'lucide-react';
+import { Dispatch, KeyboardEvent, SetStateAction } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import z from 'zod';
 
 const formSchema = z.object({
-  message: z.string().min(1, "Message is required"),
+  message: z.string().min(1, 'Message is required'),
 });
 
-export default function ChatbotTextarea({ sendMessage }: { sendMessage: (message: string) => void }) {
+export default function ChatbotTextarea({
+  sendMessage,
+  isThinking,
+  setIsThinking,
+}: {
+  sendMessage: (message: string) => void;
+  isThinking: boolean;
+  setIsThinking: Dispatch<SetStateAction<boolean>>;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      message: "",
+      message: '',
     },
   });
 
@@ -24,38 +35,52 @@ export default function ChatbotTextarea({ sendMessage }: { sendMessage: (message
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSubmit(form.getValues());
     }
   }
-
   return (
-    <form 
-    onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col p-2 bg-secondary rounded-2xl">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col p-2 bg-secondary rounded-2xl"
+    >
       <Controller
-        name="message"
         control={form.control}
-        render={({ field, fieldState }) => (
+        name="message"
+        render={({ field }) => (
           <Field>
             <textarea
               {...field}
-              placeholder="Type your message..."
-              className="bg-transparent border-none focus:outline-none focus:ring-0"
-            onKeyDown={handleKeyDown}
+              id="form-message"
+              placeholder="Ask AI Advisor here"
+              autoComplete="off"
+              className="h-16 px-3 py-2 rounded-md resize-none focus:outline-none"
+              onKeyDown={handleKeyDown}
             />
           </Field>
         )}
       />
-
-      <div className="flex justify-between">
-        <div></div>
+      <div className="flex items-center justify-between">
+        <div>
+          <Toggle
+            size="sm"
+            variant="outline"
+            pressed={isThinking}
+            onPressedChange={setIsThinking}
+            className={cn('text-xs px-0 py-0 h-8 w-8', {
+              'bg-primary/10!': isThinking,
+            })}
+          >
+            <BrainIcon className="size-4" />
+          </Toggle>
+        </div>
         <div>
           <Button
             type="submit"
             size="icon"
             variant="ghost"
-            className="cursos-painter text-primary hover:bg-primary/10 hover:text-primary disabled:bg-transparent"
+            className="cursor-pointer text-primary hover:bg-primary/10 hover:text-primary disabled:bg-transparent"
           >
             <SendIcon className="size-5" />
           </Button>
